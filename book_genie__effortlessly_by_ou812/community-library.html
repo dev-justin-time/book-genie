@@ -1,0 +1,748 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Community Library - 3D Book Browsing</title>
+    <link rel="stylesheet" href="styles.css">
+    <!-- Extra Community Library styles (optional; loaded with lower precedence) -->
+    <!-- @tweakable loadOptimizedCss Toggle loading the optimized 3D shelf CSS -->
+    <link id="cl-optimized-css" rel="stylesheet" href="COMMUNITY LIBRARY/newnew commlib/optimized.css">
+    <!-- @tweakable loadGlobalLibraryCss Toggle loading the global community styles -->
+    <link id="cl-global-styles-css" rel="stylesheet" href="COMMUNITY LIBRARY/styles.css">
+    <!-- @tweakable loadAltGlobalLibraryCss Toggle loading the alt global community styles -->
+    <link id="cl-global-styles2-css" rel="stylesheet" href="COMMUNITY LIBRARY/styles/styles.css">
+    <!-- @tweakable loadAccessibilityCss Toggle high contrast accessibility CSS support -->
+    <link id="cl-access-css" rel="stylesheet" href="COMMUNITY LIBRARY/newnew commlib/access.css">
+    <script type="importmap">
+    {
+      "imports": {
+        "@websim/websim-socket": "https://esm.websim.com/@websim/websim-socket"
+      }
+    }
+    </script>
+    <style>
+    /* @tweakable background image URL for community library page */
+    body {
+        background-image: url('https://images.unsplash.com/photo-1532012197267-da84d127e765?q=80&w=1974&auto=format&fit=crop');
+        background-size: cover;
+        background-attachment: fixed;
+        background-position: center;
+    }
+
+    /* 3D Book Browsing Styles */
+    :root {
+      font-size: 20px;
+    }
+
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body, input {
+      font-family: "Hind", sans-serif;
+      font-size: 1em;
+    }
+
+    input {
+      position: absolute;
+    }
+
+    input[type=radio] {
+      top: -20px;
+      left: -20px;
+    }
+    input[type=radio]:checked ~ input[type=reset] {
+      visibility: visible;
+    }
+
+    input[type=reset] {
+      background-color: #c22;
+      border: 0;
+      border-radius: 0;
+      color: #fff;
+      padding: 0.5em 0.75em;
+      bottom: 5%;
+      left: 50%;
+      visibility: hidden;
+      transform: translateX(-50%);
+      transition: background-color 0.2s;
+      -webkit-appearance: none;
+      appearance: none;
+    }
+    input[type=reset]:hover, input[type=reset]:focus {
+      background-color: #cd2222;
+    }
+    input[type=reset]:active {
+      background-color: #cb2222;
+    }
+
+    .bookshelf-container {
+      animation: fadeIn 0.25s 0.25s linear forwards;
+      display: flex;
+      margin: auto;
+      opacity: 0;
+      overflow: hidden;
+      position: relative;
+      width: 100%;
+      height: 600px;
+      perspective: 800px;
+      transform-style: preserve-3d;
+    }
+
+    .surface {
+      display: block;
+      width: 384px;
+      height: 224px;
+      margin: auto;
+      transform-style: preserve-3d;
+      transform: translateY(152px) rotateX(80deg) rotateZ(0deg);
+      transition: transform 0.25s;
+      will-change: transform;
+    }
+
+    .block {
+      display: none;
+      transform-style: preserve-3d;
+      position: absolute;
+      bottom: 0;
+    }
+
+    .block-inner div {
+      display: flex;
+      flex-wrap: wrap;
+      align-content: flex-start;
+      position: absolute;
+      width: 16px;
+      height: 16px;
+    }
+
+    .block-inner {
+      position: relative;
+      width: 16px;
+      transition: transform 0.25s linear;
+      transform-style: preserve-3d;
+      transform: rotateX(-90deg) translateZ(16px);
+    }
+
+    .back {
+      transform: translateZ(-16px) rotateY(180deg);
+    }
+
+    .left {
+      transform-origin: center left;
+      transform: rotateY(270deg) translateX(-16px);
+    }
+
+    .right {
+      transform-origin: top right;
+    }
+    .right::after, .right div {
+      top: 0;
+      left: 0;
+      transform-origin: 0 50%;
+      transition: transform 0.25s 0.25s linear;
+    }
+    .right::after {
+      backface-visibility: hidden;
+      -webkit-backface-visibility: hidden;
+      color: #fff;
+      font-size: 14px;
+      line-height: 14px;
+      text-align: center;
+      padding: 10% 3%;
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      z-index: 2;
+    }
+    .right div {
+      width: 100%;
+      height: 100%;
+    }
+
+    .top, .bottom {
+      transform-origin: top center;
+    }
+
+    .spine, .right::after, .contents h1 {
+      font-family: "Lora", serif;
+      font-weight: bold;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .spine {
+      background: transparent;
+      color: #ccc;
+      font-size: 10px;
+      line-height: 10px;
+      top: 0;
+      left: 0;
+      transform: rotate(90deg) translate(12px, -50%);
+      white-space: nowrap;
+      width: 0;
+      height: 16px;
+    }
+
+    .cover {
+      background-color: #fff;
+      z-index: 1;
+    }
+
+    .contents {
+      font-size: 8px;
+      padding: 8px;
+    }
+    .contents h1 {
+      font-size: 1.5em;
+    }
+    .contents p {
+      font-family: "Source Sans Pro", serif;
+    }
+
+    /* Book hover effects */
+    label:nth-child(n+6):nth-child(-n+17):hover .block-inner {
+      transform: rotateX(-90deg) translateZ(64px);
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+      }
+      to {
+        opacity: 1;
+      }
+    }
+    @keyframes viewBook {
+      from {
+        transform: rotateX(-90deg) translateZ(64px) rotateY(0);
+      }
+      50% {
+        transform: rotateX(-90deg) translateZ(240px) rotateY(0);
+      }
+      to {
+        transform: rotateX(-90deg) translateZ(240px) rotateY(-90deg) rotateZ(-10deg) translateZ(-80px);
+      }
+    }
+    @keyframes returnBook {
+      from {
+        transform: rotateX(-90deg) translateZ(240px) rotateY(-90deg) rotateZ(-10deg) translateZ(-80px);
+      }
+      50% {
+        transform: rotateX(-90deg) translateZ(240px) rotateY(0);
+      }
+      to {
+        transform: rotateX(-90deg) translateZ(16px) rotateY(0);
+      }
+    }
+
+    /* Dynamic book styles will be generated by JavaScript */
+
+    /* Chatbot Librarian Styles */
+    #chatbot-container {
+        /* @tweakable chatbotPosition The position of the chatbot launcher */
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        z-index: 1001;
+    }
+
+    #chatbot-toggle-button {
+        /* @tweakable chatbotButtonSize The size of the chatbot launcher button */
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, var(--primary-accent, #6366f1) 0%, var(--primary-accent-hover, #4f46e5) 100%);
+        color: white;
+        border: none;
+        font-size: 28px;
+        cursor: pointer;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        transition: transform 0.2s;
+    }
+
+    #chatbot-toggle-button:hover {
+        transform: scale(1.1);
+    }
+
+    #chatbot-window {
+        /* @tweakable chatbotWindowDimensions The dimensions of the chatbot window */
+        position: absolute;
+        bottom: 80px;
+        right: 0;
+        width: 350px;
+        height: 500px;
+        background-color: var(--bg-container, #fff);
+        border-radius: 15px;
+        box-shadow: 0 5px 20px rgba(0,0,0,0.25);
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+        transition: opacity 0.3s, transform 0.3s;
+        transform-origin: bottom right;
+    }
+
+    #chatbot-window.hidden {
+        display: none;
+        opacity: 0;
+        transform: scale(0.9);
+    }
+    
+    #chatbot-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 10px 15px;
+        background-color: var(--primary-accent, #6366f1);
+        color: white;
+        flex-shrink: 0;
+    }
+
+    #chatbot-header h3 {
+        margin: 0;
+        font-size: 1.1em;
+    }
+    
+    #chatbot-close-button {
+        background: none;
+        border: none;
+        color: white;
+        font-size: 24px;
+        cursor: pointer;
+    }
+
+    #chatbot-messages {
+        flex-grow: 1;
+        padding: 15px;
+        overflow-y: auto;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    .chat-message {
+        padding: 8px 12px;
+        border-radius: 10px;
+        max-width: 80%;
+        word-wrap: break-word;
+    }
+
+    .chat-message.user {
+        background-color: #eef2ff;
+        color: #333;
+        align-self: flex-end;
+        border-bottom-right-radius: 2px;
+    }
+
+    .chat-message.bot {
+        background-color: #f1f5f9;
+        color: #333;
+        align-self: flex-start;
+        border-bottom-left-radius: 2px;
+    }
+
+    #chatbot-input-container {
+        display: flex;
+        padding: 10px;
+        border-top: 1px solid var(--border-primary, #eee);
+        background-color: var(--bg-container, #fff);
+        flex-shrink: 0;
+    }
+    
+    #chatbot-input {
+        flex-grow: 1;
+        border: 1px solid var(--border-secondary, #ddd);
+        border-radius: 20px;
+        padding: 8px 15px;
+        font-size: 0.9em;
+        margin-right: 8px;
+    }
+
+    #chatbot-input:focus {
+        outline: none;
+        border-color: var(--primary-accent, #6366f1);
+    }
+
+    #chatbot-send-button {
+        background-color: var(--primary-accent, #6366f1);
+        color: white;
+        border: none;
+        border-radius: 50%;
+        width: 40px;
+        height: 40px;
+        cursor: pointer;
+        font-size: 1.2em;
+        transition: background-color 0.2s;
+    }
+
+    #chatbot-send-button:hover {
+        background-color: var(--primary-accent-hover, #4f46e5);
+    }
+
+    #chatbot-send-button:disabled {
+        background-color: #9fa8da;
+        cursor: not-allowed;
+    }
+    </style>
+    <style>
+    /* ===== Neon Title Styling to match Book Genie ===== */
+    :root {
+      /* @tweakable neonTitleColor_CL Color of the main title text on the Community Library page */
+      --cl-neon-title-color: #ffffff;
+      /* @tweakable neonGlowColor_CL Purple glow color applied to the title */
+      --cl-neon-glow-color: #7c3aed;
+      /* @tweakable neonGlowSoft_CL Soft glow layer */
+      --cl-neon-glow-soft: 0 0 4px rgba(124, 58, 237, 0.7);
+      /* @tweakable neonGlowMedium_CL Medium glow layer */
+      --cl-neon-glow-medium: 0 0 10px rgba(124, 58, 237, 0.8);
+      /* @tweakable neonGlowStrong_CL Strong glow layer */
+      --cl-neon-glow-strong: 0 0 18px rgba(124, 58, 237, 0.9);
+    }
+    #cl-site-title {
+      color: var(--cl-neon-title-color) !important;
+      text-shadow:
+        0 0 2px var(--cl-neon-glow-color),
+        var(--cl-neon-glow-soft),
+        var(--cl-neon-glow-medium),
+        var(--cl-neon-glow-strong);
+      text-align: center;
+    }
+
+    /* ===== Center CTA Overlay to open external 3D bookshelf ===== */
+    .center-cta {
+      position: relative;
+      margin: 16px auto 6px auto;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: min(780px, 92vw);
+      height: 56px;
+      border-radius: 14px;
+      cursor: pointer;
+      overflow: hidden;
+      border: 1px solid rgba(124,58,237,0.35);
+      box-shadow: 0 6px 22px rgba(124,58,237,0.28);
+      background: linear-gradient(135deg, rgba(124,58,237,0.18), rgba(99,102,241,0.22));
+      transition: transform .15s ease, box-shadow .15s ease, background .2s ease;
+    }
+    .center-cta:hover {
+      transform: translateY(-1px) scale(1.01);
+      box-shadow: 0 10px 28px rgba(124,58,237,0.42);
+      background: linear-gradient(135deg, rgba(124,58,237,0.24), rgba(99,102,241,0.28));
+    }
+    .center-cta:active {
+      transform: translateY(0) scale(0.998);
+    }
+    .center-cta .cta-label {
+      color: #fff;
+      font-weight: 700;
+      letter-spacing: .3px;
+      text-shadow:
+        0 0 2px var(--cl-neon-glow-color),
+        var(--cl-neon-glow-soft),
+        var(--cl-neon-glow-medium);
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 16px;
+    }
+    .center-cta .cta-label .ico {
+      font-size: 18px;
+      filter: drop-shadow(0 0 4px rgba(124,58,237,0.85));
+    }
+
+    /* A subtle helper text under CTA */
+    .center-cta-subtle {
+      text-align: center;
+      color: rgba(255,255,255,0.85);
+      font-size: 12px;
+      margin: 2px 0 12px 0;
+      text-shadow: 0 0 2px rgba(124,58,237,0.7);
+    }
+
+    /* ===== Community Library Toolbar & Neon Title Tweaks ===== */
+    #cl-site-title {
+      /* @tweakable clTitleFontSize_CL The font-size of the Community Library title */
+      font-size: clamp(24px, 3.4vw, 42px);
+      /* @tweakable clTitleMarginBottom_CL The distance under the title */
+      margin: 8px auto 10px auto;
+      letter-spacing: .3px;
+    }
+
+    /* Accessible, responsive toolbar */
+    .library-toolbar {
+      /* @tweakable toolbarMaxWidth_CL Max width of the controls row */
+      max-width: 1100px;
+      margin: 10px auto 12px auto;
+      display: grid;
+      /* @tweakable toolbarGrid_CL Grid template for controls layout */
+      grid-template-columns: repeat(12, 1fr);
+      /* @tweakable toolbarGap_CL Gap between controls */
+      gap: 10px;
+      align-items: center;
+      /* @tweakable toolbarPadding_CL Padding around the toolbar */
+      padding: 10px 12px;
+      border-radius: 12px;
+      background: rgba(15, 15, 35, 0.35);
+      border: 1px solid rgba(124,58,237,0.28);
+      box-shadow: 0 6px 18px rgba(124,58,237,0.25);
+      backdrop-filter: blur(6px);
+    }
+    /* @tweakable toolbarSticky_CL Make toolbar stick to top when scrolling */
+    .library-toolbar.sticky {
+      position: sticky;
+      top: 10px;
+      z-index: 1000;
+    }
+
+    .toolbar-group {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+    .toolbar-group label {
+      font-weight: 700;
+      color: #fff;
+      filter: drop-shadow(0 0 3px rgba(124,58,237,0.7));
+      font-size: 12px;
+    }
+    .toolbar-group select,
+    .toolbar-group input[type="text"] {
+      padding: 6px 8px;
+      border: 1px solid rgba(124,58,237,0.35);
+      border-radius: 8px;
+      background: rgba(255,255,255,0.9);
+      min-width: 150px;
+    }
+    .toolbar-group input[type="text"]::placeholder {
+      color: #666;
+    }
+    /* High Contrast button */
+    .mode-toggle {
+      padding: 6px 10px;
+      border-radius: 8px;
+      border: 1px solid rgba(255,255,255,0.35);
+      background: rgba(255,255,255,0.1);
+      color: #fff;
+      cursor: pointer;
+    }
+    .mode-toggle[aria-pressed="true"] {
+      outline: 2px solid #fff;
+      background: rgba(255,255,255,0.25);
+    }
+
+    /* Pagination area */
+    .pagination-zone {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      justify-content: flex-end;
+    }
+    .pagination-zone button {
+      padding: 6px 10px;
+      border-radius: 8px;
+      border: 1px solid rgba(255,255,255,0.35);
+      background: rgba(255,255,255,0.1);
+      color: #fff;
+      cursor: pointer;
+    }
+    .pagination-zone button:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+    .pagination-zone #page-info {
+      font-weight: 600;
+      color: #fff;
+      text-shadow: 0 0 2px var(--cl-neon-glow-color, #7c3aed);
+    }
+
+    /* Grid the toolbar across 12 columns for best-practice layout */
+    .toolbar-left   { grid-column: span 8; display: grid; grid-template-columns: repeat(12,1fr); gap: 10px; }
+    .toolbar-right  { grid-column: span 4; display: flex; justify-content: flex-end; align-items: center; gap: 10px; }
+
+    .tg-sort        { grid-column: span 3; }
+    .tg-search      { grid-column: span 4; }
+    .tg-theme       { grid-column: span 2; }
+    .tg-layout      { grid-column: span 2; }
+    .tg-lang        { grid-column: span 1; min-width: 90px; }
+    .tg-contrast    { grid-column: span 12; display: flex; gap: 8px; align-items: center; }
+
+    @media (max-width: 980px) {
+      .toolbar-left { grid-template-columns: repeat(6,1fr); }
+      .tg-sort { grid-column: span 3; }
+      .tg-search { grid-column: span 6; }
+      .tg-theme { grid-column: span 3; }
+      .tg-layout { grid-column: span 3; }
+      .tg-lang { grid-column: span 2; }
+      .tg-contrast { grid-column: span 6; }
+      .toolbar-right { grid-column: span 12; justify-content: space-between; }
+    }
+
+    /* Back button alignment and style match */
+    #back-button {
+      display: inline-block;
+      margin: 8px auto 16px auto;
+      /* @tweakable clBackButtonMaxWidth_CL Max width for Back to Book Genie button */
+      max-width: 260px;
+      width: 100%;
+    }
+    </style>
+    <link rel='stylesheet' href='https://fonts.googleapis.com/css?family=Hind'>
+    <link rel='stylesheet' href='https://fonts.googleapis.com/css?family=Lora'>
+    <link rel='stylesheet' href='https://fonts.googleapis.com/css?family=Source+Sans+Pro'>
+</head>
+<body>
+    <!-- Auth Panel -->
+    <div id="auth-panel" style="margin-bottom:20px; text-align:right;"></div>
+
+    <!-- Updated title to match Book Genie styling -->
+    <h1 id="cl-site-title" class="library-header"><span>Community Library - 3D Book Browsing</span></h1>
+
+    <!-- Center clickable area that opens the external 3D Bookshelf -->
+    <!-- @tweakable extBookshelfUrl URL to open when the center CTA is clicked -->
+    <div id="center-cta" class="center-cta" role="button" tabindex="0" aria-label="Open 3D Interactive Bookshelf">
+      <div class="cta-label">
+        <span class="ico">📚</span>
+        <span>Open the 3D Interactive Bookshelf by JUSTIN_TIME</span>
+        <span class="ico">↗</span>
+      </div>
+    </div>
+    <!-- @tweakable openInNewTab Open the 3D bookshelf in a new browser tab -->
+    <div class="center-cta-subtle">Tip: Click the bar above to explore the live 3D shelf (opens in a new tab).</div>
+
+    <!-- Controls Toolbar -->
+    <div id="library-controls"
+         class="library-toolbar sticky"
+         role="toolbar"
+         aria-label="Community Library controls and filters">
+      <div class="toolbar-left">
+        <div class="toolbar-group tg-sort">
+            <label for="sort-select">Sort:</label>
+            <select id="sort-select" aria-label="Sort books">
+                <option value="newest" selected>Newest</option>
+                <option value="chapters_desc">Most Chapters</option>
+                <option value="title_asc">Title A–Z</option>
+            </select>
+        </div>
+        <div class="toolbar-group tg-search">
+            <label for="search-input">Search:</label>
+            <input id="search-input" type="text" placeholder="Filter by title or author..." aria-label="Filter by title or author">
+        </div>
+        <div class="toolbar-group tg-theme">
+            <label for="theme-select">Theme:</label>
+            <select id="theme-select" aria-label="Select theme">
+                <option value="light">Light</option>
+                <option value="dark">Dark</option>
+                <option value="neon" selected>Neon</option>
+            </select>
+        </div>
+        <div class="toolbar-group tg-layout">
+            <label for="layout-select">Layout:</label>
+            <select id="layout-select" aria-label="Select layout">
+                <option value="3d" selected>3D Shelf</option>
+                <option value="grid">Grid</option>
+            </select>
+        </div>
+        <div class="toolbar-group tg-lang">
+            <label for="lib-language-select">Language:</label>
+            <select id="lib-language-select" aria-label="Select UI language for Library">
+                <option value="en" selected>EN</option>
+                <option value="es">ES</option>
+                <option value="zh">ZH</option>
+                <option value="ar">AR</option>
+            </select>
+        </div>
+        <div class="toolbar-group tg-contrast">
+            <button id="high-contrast-toggle"
+                    class="mode-toggle"
+                    aria-pressed="false"
+                    title="High Contrast Mode">
+              High Contrast
+            </button>
+            <div id="gamification-status" style="display:flex; align-items:center; gap:6px;">
+                <span style="font-size:12px; color:#ddd;">Points:</span>
+                <strong id="gamification-points">0</strong>
+                <span id="gamification-badges" style="font-size:12px; color:#bbb;"></span>
+            </div>
+        </div>
+      </div>
+      <div class="toolbar-right">
+        <div class="pagination-zone" aria-label="Pagination controls">
+          <button id="prev-page-btn" disabled>&larr; Prev</button>
+          <span id="page-info" style="min-width:90px; text-align:center;">Page 1/1</span>
+          <button id="next-page-btn" disabled>Next &rarr;</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Back button remains below toolbar for clarity -->
+    <button id="back-button"
+            onclick="window.location.href='index.html'">
+      Back to Book Genie
+    </button>
+    
+    <section id="publish-section">
+        <h2>Publish Your Book</h2>
+        <input type="file" id="book-file-input" accept=".json">
+        <button id="publish-button">Publish</button>
+        <div id="publish-status"></div>
+    </section>
+
+    <!-- Grid view container (hidden when in 3D) -->
+    <section id="grid-section" style="display:none;">
+        <h2>Available Books</h2>
+        <div id="grid-container" style="display:grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap:16px;"></div>
+    </section>
+
+    <section id="library-section">
+        <h2>Available Books</h2>
+        <form class="bookshelf-container" id="bookshelf">
+            <!-- Radio inputs and blocks are managed by JS -->
+            <div class="surface" id="bookshelf-surface"></div>
+            <input type="reset" value="Return"/>
+        </form>
+    </section>
+    
+    <!-- AI Chatbot Librarian -->
+    <div id="chatbot-container">
+        <div id="chatbot-window" class="hidden">
+            <div id="chatbot-header">
+                <h3>AI Librarian</h3>
+                <button id="chatbot-close-button" aria-label="Close Chat">&times;</button>
+            </div>
+            <div id="chatbot-messages"></div>
+            <div id="chatbot-input-container">
+                <input type="text" id="chatbot-input" placeholder="Ask about the books...">
+                <button id="chatbot-send-button" aria-label="Send Message">➤</button>
+            </div>
+        </div>
+        <button id="chatbot-toggle-button" aria-label="Toggle AI Librarian Chat">🤖</button>
+    </div>
+
+    <!-- Load "experimental extras" as plain scripts if present -->
+    <!-- @tweakable loadLocalizationJs Toggle loading localization logic -->
+    <script id="cl-localization-js" src="COMMUNITY LIBRARY/newnew commlib/localization.js" defer></script>
+    <!-- @tweakable loadAccessibilityJs Toggle loading accessibility helpers -->
+    <script id="cl-access-js" src="COMMUNITY LIBRARY/newnew commlib/access.js" defer></script>
+    <!-- @tweakable loadGamificationJs Toggle loading gamification helpers -->
+    <script id="cl-gamification-js" src="COMMUNITY LIBRARY/newnew commlib/gamification.js" defer></script>
+    <!-- Not loaded by default: IPFS/ttsConfig because they require external APIs. Logic is feature-flagged inside community-library.js -->
+
+    <script type="module" src="community-library.js"></script>
+
+    <script>
+      // Ensure High Contrast button toggles aria-pressed for accessibility
+      (function(){
+        const btn = document.getElementById('high-contrast-toggle');
+        if (!btn) return;
+        btn.addEventListener('click', () => {
+          const pressed = btn.getAttribute('aria-pressed') === 'true';
+          btn.setAttribute('aria-pressed', String(!pressed));
+        });
+      })();
+    </script>
+</body>
+</html>

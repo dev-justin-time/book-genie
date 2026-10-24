@@ -1,0 +1,22 @@
+/* High-contrast mode */
+.high-contrast {
+    background: #000;
+    color: #fff;
+  }
+  .high-contrast .block, .high-contrast .popup {
+    background: #333;
+    color: #fff;
+    border: 2px solid #fff;
+  }
+  
+  /* Screen reader support */
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+  }
+  

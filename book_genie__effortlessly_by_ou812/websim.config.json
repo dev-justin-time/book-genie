@@ -1,0 +1,45 @@
+{
+  "database": {
+    "schema": {
+      "community_book": {
+        "id": {
+          "type": "uuid",
+          "description": "Primary key for the book record."
+        },
+        "user_id": {
+          "type": "uuid",
+          "description": "The user ID of the person who published the book."
+        },
+        "bookTitle": {
+          "type": "text",
+          "description": "The title of the book."
+        },
+        "dataUrl": {
+          "type": "text",
+          "description": "The URL to the book's JSON data file."
+        },
+        "imageUrl": {
+          "type": "text",
+          "description": "The URL to the book's cover image."
+        },
+        "chapterCount": {
+          "type": "integer",
+          "description": "The number of chapters in the book."
+        },
+        "fileSize": {
+          "type": "numeric",
+          "description": "The size of the book's JSON file in bytes."
+        },
+        "uploadedAt": {
+          "type": "timestamptz",
+          "description": "The timestamp when the book was uploaded."
+        },
+        "originalFilename": {
+          "type": "text",
+          "description": "The original filename of the uploaded book."
+        }
+      }
+    }
+  }
+}
+

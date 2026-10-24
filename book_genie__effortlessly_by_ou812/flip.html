@@ -1,0 +1,623 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- @tweakable flipPageTitle The title of the interactive generator page -->
+    <title data-i18n="title">Interactive Book Genie</title>
+    <style>
+        /* Language-specific fonts */
+        @import url('https://fonts.googleapis.com/css2?family=Alice&family=Noto+Sans+SC:wght@400;700&family=Noto+Naskh+Arabic:wght@400;700&family=Noto+Sans+Devanagari:wght@400;700&display=swap');
+        
+        :root {
+            --font-english: 'Alice', serif;
+            --font-chinese: 'Noto Sans SC', sans-serif;
+            --font-arabic: 'Noto Naskh Arabic', serif;
+            --font-hindi: 'Noto Sans Devanagari', sans-serif;
+        }
+        .sr-only {
+            position: absolute;
+            width: 1px; height: 1px;
+            padding: 0; margin: -1px;
+            overflow: hidden; clip: rect(0,0,0,0);
+            border: 0; white-space: nowrap;
+        }
+        body { 
+            padding: 20px; 
+            font-family: var(--font-english); 
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            margin: 0;
+        }
+        .accessibility-tools { 
+            margin-bottom: 15px;
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        .controls { 
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            margin-bottom: 30px;
+        }
+        .controls textarea { 
+            width: 100%; 
+            height: 150px;
+            border: 2px solid #e1e5e9;
+            border-radius: 8px;
+            padding: 15px;
+            font-size: 16px;
+            resize: vertical;
+        }
+        .controls button { 
+            margin-top: 15px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        .controls button:hover {
+            transform: translateY(-2px);
+        }
+        .controls button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        /* Flip Book Styles */
+        .book-container {
+            perspective: 1000px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 600px;
+            margin: 20px 0;
+        }
+        
+        .book {
+            position: relative;
+            width: 800px;
+            height: 600px;
+            transform-style: preserve-3d;
+        }
+        
+        .page {
+            position: absolute;
+            width: 400px;
+            height: 600px;
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 0 8px 8px 0;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            transform-origin: left center;
+            transform-style: preserve-3d;
+            transition: transform 0.6s ease-in-out;
+            overflow: hidden;
+        }
+        
+        .page-left {
+            left: 0;
+            border-radius: 8px 0 0 8px;
+            transform-origin: right center;
+        }
+        
+        .page-right {
+            right: 0;
+        }
+        
+        .page.flipped {
+            transform: rotateY(-180deg);
+        }
+        
+        .page-content {
+            padding: 30px;
+            height: 540px;
+            overflow-y: auto;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+        
+        .page-content h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 24px;
+        }
+        
+        .page-content h2 {
+            color: #555;
+            margin-top: 20px;
+            margin-bottom: 15px;
+            font-size: 18px;
+        }
+        
+        .page-content p {
+            text-align: justify;
+            margin-bottom: 15px;
+        }
+        
+        .page-number {
+            position: absolute;
+            bottom: 20px;
+            right: 30px;
+            font-size: 12px;
+            color: #666;
+        }
+        
+        .navigation {
+            text-align: center;
+            margin-top: 20px;
+        }
+        
+        .nav-button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            margin: 0 10px;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 14px;
+        }
+        
+        .nav-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+        
+        .nav-button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.8);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        
+        .loading-content {
+            background: white;
+            padding: 40px;
+            border-radius: 15px;
+            text-align: center;
+            max-width: 400px;
+        }
+        
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 5px solid #f3f3f3;
+            border-top: 5px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .back-button {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: rgba(255,255,255,0.9);
+            color: #333;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.2s;
+            z-index: 1001;
+        }
+        
+        .back-button:hover {
+            background: white;
+            transform: translateY(-2px);
+        }
+    </style>
+</head>
+<body>
+    <button class="back-button" onclick="window.location.href='index.html'">← Back to Book Genie</button>
+    
+    <div class="accessibility-tools">
+        <select class="lang-switcher" id="languageSelect" aria-label="Select language"></select>
+        <button aria-label="High Contrast Mode" onclick="toggleContrast()">🌗</button>
+    </div>
+
+    <div class="controls">
+        <div id="liveRegion" aria-live="polite" class="sr-only"></div>
+        <textarea id="contentInput" 
+                  aria-label="Book content input"
+                  placeholder="Enter your book idea, topic, or story outline here..."></textarea>
+        <div id="recaptcha" class="g-recaptcha" 
+             data-sitekey="YOUR_SITE_KEY"
+             data-callback="onCaptchaSuccess"
+             data-size="invisible"></div>
+        <button id="generateButton" onclick="validateSubmission()" data-i18n="generate">Generate Interactive Book</button>
+    </div>
+
+    <div class="book-container" id="bookContainer" style="display: none;">
+        <div class="book" id="book"></div>
+    </div>
+    
+    <div class="navigation" id="navigation" style="display: none;">
+        <button class="nav-button" id="prevButton" onclick="previousPage()">← Previous</button>
+        <span id="pageInfo">Page 1 of 1</span>
+        <button class="nav-button" id="nextButton" onclick="nextPage()">Next →</button>
+    </div>
+
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="loading-content">
+            <div class="spinner"></div>
+            <h3>Generating Your Interactive Book...</h3>
+            <p id="loadingStatus">Analyzing your input...</p>
+        </div>
+    </div>
+
+    <script>
+        // Rate limiting
+        let lastSubmission = 0;
+        // @tweakable rateLimitMs Minimum milliseconds between submissions to mitigate spam
+        const RATE_LIMIT = 30000; // 30 seconds
+
+        // Book state
+        let bookData = {
+            title: '',
+            chapters: [],
+            currentPage: 0,
+            totalPages: 0
+        };
+
+        // GUI Translations (simplified)
+        const translations = {
+            en: {
+                /* @tweakable flipPageTitleTranslation The English title for the interactive page */
+                title: "Interactive Book Genie",
+                generate: "Generate Interactive Book",
+                rateLimit: "Please wait before submitting again",
+                success: "Book generated successfully",
+                error: "Content contains inappropriate language",
+                analyzing: "Analyzing your input...",
+                generating: "Generating chapters...",
+                formatting: "Formatting pages...",
+                complete: "Book ready!"
+            },
+            es: {
+                title: "Generador de Libros Interactivo",
+                generate: "Generar Libro Interactivo",
+                rateLimit: "Espere antes de enviar nuevamente",
+                success: "Libro generado con éxito",
+                error: "Contenido inapropiado detectado",
+                analyzing: "Analizando su entrada...",
+                generating: "Generando capítulos...",
+                formatting: "Formateando páginas...",
+                complete: "¡Libro listo!"
+            }
+            // other languages...
+        };
+        let currentLang = 'en';
+
+        // populate languageSelect
+        const langSwitch = document.getElementById('languageSelect');
+        Object.keys(translations).forEach(code => {
+            const opt = document.createElement('option');
+            opt.value = code;
+            opt.textContent = code.toUpperCase();
+            langSwitch.appendChild(opt);
+        });
+        langSwitch.value = currentLang;
+        langSwitch.addEventListener('change', () => {
+            currentLang = langSwitch.value;
+            document.querySelector('[data-i18n="title"]').textContent = translations[currentLang].title;
+            document.querySelector('[data-i18n="generate"]').textContent = translations[currentLang].generate;
+            applyLanguageStyles();
+        });
+
+        // @tweakable bannedWordsList List of normalized banned words for content filtering (update per language)
+        const bannedWords = new Set([
+            'nude','violence','hate','racism',
+            'desnudo','violencia','odio',
+            'nu','violence','haine'
+        ]);
+
+        function onCaptchaSuccess(token) {
+            generateBook();
+            grecaptcha.reset();
+        }
+
+        function validateSubmission() {
+            if (Date.now() - lastSubmission < RATE_LIMIT) {
+                updateLiveRegion('rateLimit');
+                return;
+            }
+            
+            const content = document.getElementById('contentInput').value.trim();
+            if (!content) {
+                alert('Please enter a book idea or topic first.');
+                return;
+            }
+            
+            // Skip reCAPTCHA for now and generate directly
+            generateBook();
+        }
+
+        async function generateBook() {
+            lastSubmission = Date.now();
+            const raw = document.getElementById('contentInput').value;
+            if (containsBannedContent(raw)) {
+                updateLiveRegion('error');
+                return;
+            }
+            
+            showLoading();
+            
+            try {
+                // Generate book title and chapters
+                updateLoadingStatus('analyzing');
+                const bookStructure = await generateBookStructure(raw);
+                
+                updateLoadingStatus('generating');
+                const chapters = await generateChapters(raw, bookStructure.chapters, bookStructure.title);
+                
+                updateLoadingStatus('formatting');
+                bookData = {
+                    title: bookStructure.title,
+                    chapters: chapters,
+                    currentPage: 0,
+                    totalPages: Math.max(1, chapters.length)
+                };
+                
+                createFlipBook();
+                hideLoading();
+                updateLiveRegion('success');
+                
+            } catch (error) {
+                console.error('Book generation error:', error);
+                hideLoading();
+                alert('Failed to generate book. Please try again.');
+            }
+        }
+
+        async function generateBookStructure(userInput) {
+            const systemPrompt = `You are a helpful assistant that generates a book structure. Create a title and 5-8 chapter titles for a book based on the user's input. Use the ${currentLang} language. Respond with JSON only, following this schema:
+            {
+                "title": "Book Title",
+                "chapters": ["Chapter 1 Title", "Chapter 2 Title", ...]
+            }`;
+
+            const completion = await websim.chat.completions.create({
+                messages: [
+                    { role: "system", content: systemPrompt },
+                    { role: "user", content: userInput }
+                ],
+                json: true
+            });
+
+            return JSON.parse(completion.content);
+        }
+
+        async function generateChapters(userInput, chapterTitles, bookTitle) {
+            const chapters = [];
+            
+            for (let i = 0; i < chapterTitles.length; i++) {
+                const chapterTitle = chapterTitles[i];
+                const chapterNumber = i + 1;
+                
+                const systemPrompt = `You are a helpful assistant that generates chapter content for a book titled "${bookTitle}". Write Chapter ${chapterNumber}: "${chapterTitle}". Use the ${currentLang} language. 
+
+Write engaging content of approximately 800-1200 words. Include proper paragraph breaks. Focus on the chapter title while maintaining consistency with the overall book theme.`;
+
+                const completion = await websim.chat.completions.create({
+                    messages: [
+                        { role: "system", content: systemPrompt },
+                        { role: "user", content: `Book context: ${userInput}\nChapter: ${chapterTitle}` }
+                    ]
+                });
+
+                chapters.push({
+                    title: chapterTitle,
+                    content: completion.content,
+                    number: chapterNumber
+                });
+                
+                // Update progress
+                const progress = ((i + 1) / chapterTitles.length) * 100;
+                updateLoadingStatus('generating', `${Math.round(progress)}% complete`);
+            }
+            
+            return chapters;
+        }
+
+        function createFlipBook() {
+            const bookContainer = document.getElementById('bookContainer');
+            const book = document.getElementById('book');
+            const navigation = document.getElementById('navigation');
+            
+            // Clear existing content
+            book.innerHTML = '';
+            
+            // Create title page
+            const titlePage = createPage(0, true);
+            titlePage.innerHTML = `
+                <div class="page-content">
+                    <h1>${bookData.title}</h1>
+                    <div style="text-align: center; margin-top: 100px;">
+                        <p style="font-size: 18px; font-style: italic;">An Interactive Book Experience</p>
+                        <p style="margin-top: 50px;">Generated by Book Genie</p>
+                    </div>
+                </div>
+                <div class="page-number">1</div>
+            `;
+            book.appendChild(titlePage);
+            
+            // Create chapter pages
+            bookData.chapters.forEach((chapter, index) => {
+                const pageNumber = index + 2;
+                const page = createPage(pageNumber - 1, false);
+                
+                page.innerHTML = `
+                    <div class="page-content">
+                        <h2>Chapter ${chapter.number}: ${chapter.title}</h2>
+                        ${formatChapterContent(chapter.content)}
+                    </div>
+                    <div class="page-number">${pageNumber}</div>
+                `;
+                
+                book.appendChild(page);
+            });
+            
+            bookData.totalPages = bookData.chapters.length + 1;
+            
+            // Show book and navigation
+            bookContainer.style.display = 'flex';
+            navigation.style.display = 'block';
+            
+            updatePageInfo();
+            updateNavButtons();
+        }
+
+        function createPage(index, isLeft = false) {
+            const page = document.createElement('div');
+            page.className = `page ${isLeft ? 'page-left' : 'page-right'}`;
+            page.dataset.pageIndex = index;
+            return page;
+        }
+
+        function formatChapterContent(content) {
+            return content
+                .split('\n\n')
+                .filter(p => p.trim())
+                .map(p => `<p>${p.trim()}</p>`)
+                .join('');
+        }
+
+        function nextPage() {
+            if (bookData.currentPage < bookData.totalPages - 1) {
+                const currentPageElement = document.querySelector(`[data-page-index="${bookData.currentPage}"]`);
+                if (currentPageElement) {
+                    currentPageElement.classList.add('flipped');
+                }
+                
+                bookData.currentPage++;
+                updatePageInfo();
+                updateNavButtons();
+            }
+        }
+
+        function previousPage() {
+            if (bookData.currentPage > 0) {
+                bookData.currentPage--;
+                
+                const pageToFlipBack = document.querySelector(`[data-page-index="${bookData.currentPage}"]`);
+                if (pageToFlipBack) {
+                    pageToFlipBack.classList.remove('flipped');
+                }
+                
+                updatePageInfo();
+                updateNavButtons();
+            }
+        }
+
+        function updatePageInfo() {
+            const pageInfo = document.getElementById('pageInfo');
+            pageInfo.textContent = `Page ${bookData.currentPage + 1} of ${bookData.totalPages}`;
+        }
+
+        function updateNavButtons() {
+            const prevButton = document.getElementById('prevButton');
+            const nextButton = document.getElementById('nextButton');
+            
+            prevButton.disabled = bookData.currentPage === 0;
+            nextButton.disabled = bookData.currentPage === bookData.totalPages - 1;
+        }
+
+        function showLoading() {
+            document.getElementById('loadingOverlay').style.display = 'flex';
+        }
+
+        function hideLoading() {
+            document.getElementById('loadingOverlay').style.display = 'none';
+        }
+
+        function updateLoadingStatus(key, extra = '') {
+            const status = document.getElementById('loadingStatus');
+            const message = translations[currentLang][key] || translations['en'][key] || key;
+            status.textContent = extra ? `${message} ${extra}` : message;
+        }
+
+        function containsBannedContent(text) {
+            const norm = text.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+            return [...bannedWords].some(w => norm.includes(w));
+        }
+
+        function updateLiveRegion(key) {
+            const region = document.getElementById('liveRegion');
+            region.textContent = translations[currentLang][key] || '';
+            setTimeout(()=> region.textContent='', 5000);
+        }
+
+        function sanitizeInput(text) {
+            const d = document.createElement('div');
+            d.textContent = text;
+            return d.innerHTML.replace(/</g,'&lt;').replace(/>/g,'&gt;');
+        }
+
+        // Language-specific font application
+        function getLangFont() {
+            switch(currentLang) {
+                case 'zh': return 'var(--font-chinese)';
+                case 'ar': return 'var(--font-arabic)';
+                case 'hi': return 'var(--font-hindi)';
+                default: return 'var(--font-english)';
+            }
+        }
+        function applyLanguageStyles() {
+            const font = getLangFont();
+            document.body.style.fontFamily = font;
+        }
+
+        // Contrast toggle
+        function toggleContrast() {
+            document.body.classList.toggle('high-contrast');
+        }
+
+        // Add keyboard navigation
+        document.addEventListener('keydown', function(e) {
+            if (bookData.totalPages > 0) {
+                if (e.key === 'ArrowRight' || e.key === ' ') {
+                    e.preventDefault();
+                    nextPage();
+                } else if (e.key === 'ArrowLeft') {
+                    e.preventDefault();
+                    previousPage();
+                }
+            }
+        });
+
+        // initial setup
+        document.addEventListener('DOMContentLoaded', () => {
+            applyLanguageStyles();
+        });
+    </script>
+    <script src="https://www.google.com/recaptcha/api.js" async defer></script>
+</body>
+</html>

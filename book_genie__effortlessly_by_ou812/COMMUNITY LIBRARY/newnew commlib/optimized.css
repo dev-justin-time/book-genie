@@ -1,0 +1,88 @@
+.container {
+    display: flex;
+    flex-direction: column;
+    padding: 20px;
+  }
+  
+  .shelves {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+  
+  .shelf-row {
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+   
+  }
+  
+  .surface {
+    display: flex;
+    flex-direction: row;
+    transform-style: preserve-3d;
+    transition: transform 0.25s;
+  }
+  
+  .block {
+    flex: 0 0 auto;
+    scroll-snap-align: start;
+  }
+  
+  .cover-image, .front-image, .back-image {
+    background-size: cover;
+    background-position: center;
+    width: 100%;
+    height: 100%;
+  }
+  
+  .popup-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  
+  .popup {
+    background: white;
+    padding: 20px;
+    border-radius: 8px;
+    max-width: 500px;
+    width: 90%;
+  }
+  
+  .popup .upload-section {
+    margin-bottom: 10px;
+  }
+  
+  .library-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+  }
+  
+  .search-bar input {
+    padding: 8px;
+    width: 200px;
+    border-radius: 4px;
+    border: 1px solid #ccc;
+  }
+  
+  .mode-toggle {
+    cursor: pointer;
+  }
+  
+  @media (max-width: 600px) {
+    .surface {
+      width: 100%;
+    }
+    .block {
+      width: 80px;
+    }
+  }
+  

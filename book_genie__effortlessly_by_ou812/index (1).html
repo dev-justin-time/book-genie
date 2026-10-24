@@ -1,0 +1,187 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- SEO Meta Tags - Enhanced -->
+    <!-- @tweakable pageTitle The title displayed in the browser tab -->
+    <title>Book Genie! Effortlessly create complete books</title>
+    <meta name="description" content="Effortlessly create complete books with Book Genie. Simply provide an idea, topic, or outline, and our advanced AI writing tool will generate engaging chapters, story arcs, and detailed content. Ideal for authors, creators, and educators.">
+    <meta name="keywords" content="Book Genie!, AI book generator, story generator, AI writing tool, artificial intelligence writing, book creation tool, chapter generator, write a book with AI, AI author assistant, narrative generation, automatic book writing, fiction generator, non-fiction generator, AI content creation, story writing AI">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="https://websim.ai/"> 
+    <!-- Open Graph Meta Tags (for social media sharing) -->
+    <meta property="og:title" content="Book Genie! Effortlessly create complete books">
+    <meta property="og:description" content="Generate unique books, chapter by chapter, using advanced AI. Transform your ideas into complete narratives or informative texts effortlessly.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://book.on.websim.ai/">
+    <!-- <meta property="og:image" content="https://websim.ai/og-image.jpg"> --> 
+    <meta property="og:image:alt" content="AI Book Generator Interface showing a book being created"> 
+    <!-- @tweakable ogSiteName The site name in Open Graph meta tags -->
+    <meta property="og:site_name" content="Book Genie">
+    <meta property="og:locale" content="en_US">
+    <!-- Twitter Card Meta Tags -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Book Genie | Create Full Books with Artificial Intelligence">
+    <meta name="twitter:description" content="Generate unique books, chapter by chapter, using advanced AI. Transform your ideas into complete narratives or informative texts effortlessly.">
+    <!-- <meta name="twitter:image" content="https://websim.ai/twitter-image.jpg"> --> 
+    <meta name="twitter:image:alt" content="AI Book Generator Interface"> 
+    <!-- Stylesheets -->
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="settings-style.css">
+    <!-- Import Map -->
+    <script type="importmap">
+        {
+            "imports": {
+                "config": "./config.js",
+                "jspdf": "https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js",
+                "chapter-generator": "./chapter-generator.js",
+                "chapter-tools": "./chapter-tools.js",
+                "ai-prompt-popup": "./ai-prompt-popup.js",
+                "image-popup": "./image-popup.js",
+                "format-chapter": "./format-chapter.js",
+                "book-manager": "./book-manager.js",
+                "welcome-popup": "./welcome-popup.js",
+                "background-manager": "./background-manager.js",
+                "settings-manager": "./settings-manager.js",
+                "generation-settings": "./generation-settings.js",
+                "json-settings": "./json-settings.js",
+                "genre-manager": "./genre-manager.js",
+                "language-select": "./language-select.js",
+                "export-manager": "./export-manager.js",
+                "event-listeners": "./event-listeners.js",
+                "ui-helpers": "./ui-helpers.js",
+                "story-details-settings": "./story-details-settings.js",
+                "tts-settings": "./tts-settings.js",
+                "ui-style-settings": "./ui-style-settings.js",
+                "@websim/websim-socket": "https://esm.websim.com/@websim/websim-socket"
+            }
+        }
+    </script>
+    <!-- Main Script -->
+    <script src="script.js" type="module"></script>
+    <!-- JSON-LD Structured Data - Enhanced -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "SoftwareApplication",
+      /* @tweakable jsonLdName The name in JSON-LD structured data */
+      "name": "Book Genie",
+      "description": "An advanced online tool that leverages artificial intelligence to generate complete books, chapter by chapter, based on user prompts, ideas, or outlines. Features customizable generation settings, including genre, style, and chapter length.",
+      "applicationCategory": "MultimediaApplication",
+      "applicationSubCategory": "Writing Tool",
+      "operatingSystem": "Web",
+      "browserRequirements": "Requires JavaScript and a modern web browser (Chrome, Firefox, Safari, Edge, Opera).",
+      "url": "https://websim.ai/",
+      "author": {
+        "@type": "Person",
+        "name": "kosch",
+        "url": "http://kosch.cloud"
+      },
+      "creator": {
+         "@type": "Person",
+         "name": "@JUSTIN_TIME",
+         "url": "http://websim.ai/@JUSTIN_TIME"
+      },
+      "keywords": "AI book generator, story generator, AI writing tool, artificial intelligence writing, book creation tool, chapter generator, write a book with AI, AI author assistant, narrative generation, automatic book writing, fiction generator, non-fiction generator, AI content creation, story writing AI",
+      "softwareVersion": "9.9", 
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD",
+        "availability": "https://schema.org/InStock"
+      },
+      "aggregateRating": { 
+         "@type": "AggregateRating",
+         "ratingValue": "4.5", 
+         "reviewCount": "150"  
+      },
+       "featureList": [
+         "AI-powered chapter generation",
+         "Customizable book topic/idea input",
+         "Multiple language support",
+         "Genre and style selection",
+         "Adjustable chapter length and count",
+         "Book saving and loading (JSON format)",
+         "Chapter editing and regeneration tools",
+         "AI-driven text formatting",
+         "Image generation integration",
+         "Text-to-Speech capability",
+         "UI theme customization",
+         "Image drag and drop positioning"
+       ]
+    }
+    </script>
+</head>
+<body>
+    <h1>Book Genie</h1>
+    <button id="menu-button">Hide Input</button>
+    <main id="app-container"> 
+        <section id="input-area" aria-labelledby="input-heading"> 
+            <h2 id="input-heading" class="sr-only">Book Input and Controls</h2> 
+            <div id="upper-menu">
+                <!-- @tweakable userAccountPosition Position of user account in the menu (before or after other buttons) -->
+                <div id="user-account-section" style="display: flex; align-items: center; gap: 8px; margin-right: 10px;"></div>
+                <div id="collaborators" style="display: flex; align-items: center; gap: 4px; margin-right: 10px;"></div>
+                <button id="load-button">Load</button>
+                <button id="save-button">Save</button>
+                <button id="settings-button">Settings</button>
+                <button id="export-button" title="Export Book to PDF, RTF, or HTML">Export</button>
+                <button id="flip-ui-button" title="Open Interactive Generator">Interactive Book Generator</button>
+                <button id="goto-bookmark-button" title="Go to Bookmarked Chapter" style="display: none;" disabled> Go to Bookmark</button>
+                <input type="file" id="file-input" accept=".json" style="display: none;">
+                <button id="community-library-button" title="Community Library">Community Library</button>
+            </div>
+            <div class="prompt-textarea-container">
+                <div id="multiplayer-cursors"></div>
+                <textarea id="input-text" placeholder="Enter your word, idea, topic, or story here..." aria-label="Book idea input"></textarea>
+            </div>
+            <select id="language-select" aria-label="Select language for book generation">
+                <option value="auto">Auto Detect</option>
+                <option value="custom">Add Custom...</option>
+            </select>
+            <button id="generate-button">Generate Chapters</button>
+            <button id="reset-button">Reset</button>
+        </section>
+        <section id="table-of-contents" aria-labelledby="toc-heading"> 
+            <h2 id="toc-heading">Table of Contents</h2>
+            <div id="chapters-container">
+            </div>
+        </section>
+        <section id="book-content" aria-labelledby="book-content-heading"> 
+             <h2 id="book-content-heading" class="sr-only">Generated Book Content</h2> 
+            <!-- Chapter content will be dynamically added here -->
+        </section>
+        <aside id="below-footer-zone" aria-labelledby="extra-tools-heading"> 
+             <h2 id="extra-tools-heading" class="sr-only">Additional Tools and Information</h2> 
+            <div id="ai-command-console" aria-live="polite"> 
+            </div>
+            <div id="ai-command-area">
+                <input type="text" id="global-ai-command" placeholder="Enter global AI command and press Enter to apply to all chapters..." style="width: 100%;" aria-label="Global AI command input"/>
+            </div>
+        </aside>
+    </main> 
+    <footer>
+        <p> ❤️ from <a href="https://websim.com/@JUSTIN_TIME" target="_blank" rel="noopener">JUSTIN_TIME</a> | <a href="https://websim.com/@JUSTIN_TIME">https://websim.com/@JUSTIN_TIME</a> | Version <span id="project-version">9.90</span></p>
+    </footer>
+    <div id="settings-popup">
+        <div class="settings-content">
+            <button id="close-settings-button" style="position: absolute; top: 10px; right: 10px; background: transparent; border: none; font-size: 20px; cursor: pointer;">Close</button>
+            <h2>Settings</h2>
+        </div>
+    </div>
+    <style>
+        /* Simple style to hide screen-reader-only headings */
+        .sr-only {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            white-space: nowrap;
+            border-width: 0;
+        }
+    </style>
+</body>
+</html>

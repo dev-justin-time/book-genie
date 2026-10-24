@@ -1,0 +1,98 @@
+.library-header
+  h1 Book Genie Community Library
+  .search-bar
+    input(type="text" placeholder="Search books...")
+  .login-btn Login
+  .mode-toggle 🌓
+  a.create-app(href="https://websim.com/@JUSTIN_TIME/bookgenie" target="_blank") Create New Book
+
+.library-header
+  h1 Book Genie Community Library
+  .search-bar
+    input(type="text" placeholder="Search books...")
+  .login-btn Login
+  .mode-toggle 🌓
+  a.create-app(href="https://websim.com/@JUSTIN_TIME/bookgenie" target="_blank") Create New Book
+  .wallet-status
+    span Wallet: 
+    span#wallet-address Not Connected
+    span#token-balance 0 Book Tokens, 0 Genie Coins, 0 Wish Coins
+.mermaid
+  graph TD
+    A[Start: User Initiates Signup] --> B[Enter WebSim.ai Email/Password]
+    B -->|Unique Email| C[Validate Password: 12+ digits, mixed]
+    C -->|Valid| D[Send Email 2FA Code]
+    C -->|Invalid| E[Error: Retry Password]
+    D --> F[User Enters Email 2FA Code]
+    F -->|Correct| G[Send Phone 2FA Code]
+    F -->|Incorrect| H[Error: Retry Email 2FA]
+    G --> I[User Enters Phone 2FA Code]
+    I -->|Correct| J[WebSim.ai Login]
+    I -->|Incorrect| K[Error: Retry Phone 2FA]
+    J -->|Success| L[Create EVM Wallet]
+    J -->|Failure| M[Error: Retry Login]
+    L --> N[Fund Wallet: 500 Book Tokens, 50 Genie Coins, 3 Wish Coins (Locked)]
+    N --> O[Call Smart Contract: unlockTokens]
+    O --> P[Tokens Unlocked]
+    P --> Q[User Accesses Marketplace]
+    Q --> R[Buy/Sell Books with Tokens]
+    R --> S[End: Workflow Complete]
+
+
+
+
+form.container
+  .library-header
+    h1 Book Genie Community Library
+    .search-bar
+      input(type="text" placeholder="Search books...")
+    .login-btn Login
+    .mode-toggle 🌓
+    a.create-app(href="https://websim.com/@JUSTIN_TIME/bookgenie" target="_blank") Create New Book
+  .shelves
+    - for (var s = 1; s <= 3; s++)
+      .shelf-row(id=`shelf${s}`)
+        - for (var r = 1; r <= bookData.length; r++)
+          input(type="radio", name=`title${s}`, id=`book${s}-${r}`)
+        .surface
+          - var start = (s - 1) * Math.ceil(bookData.length / 3)
+          - var end = Math.min(start + Math.ceil(bookData.length / 3), bookData.length)
+          - for (var b = start + bookStart; b < end + bookStart; b++)
+            - if (b >= bookStart && b < start + bookStart + bookData.length)
+              +labelBlock(b, bookData)
+            - else
+              +divBlock(b)
+  .marketplace
+    // Author showcase templates rendered here
+  input(type="reset", value="Return")
+  .popup-overlay.hidden
+    .popup(data-book-id="")
+      h2 Customize Book
+      .upload-section
+        label Upload Cover (Front)
+        input(type="file" accept="image/*" data-section="front")
+      .upload-section
+        label Upload Cover (Back)
+        input(type="file" accept="image/*" data-section="back")
+      .upload-section
+        label Upload Spine
+        input(type="file" accept="image/*" data-section="spine")
+      .upload-section
+        label Upload Video
+        input(type="file" accept="video/*")
+      .upload-section
+        label Upload Full Book (PDF/EPUB)
+        input(type="file" accept=".pdf,.epub")
+      .mirror-toggle
+        label Mirror Cover
+        input(type="checkbox")
+      .tts-section
+        h3 Text-to-Speech Settings
+        label Voice Selection
+        select#tts-voice
+          option(value="default") Default Voice
+        label Reading Speed
+        input(type="range" min="0.5" max="2" step="0.1" value="1" id="tts-speed")
+        button#tts-preview Preview Narration
+      button.save Save
+      button.cancel Cancel

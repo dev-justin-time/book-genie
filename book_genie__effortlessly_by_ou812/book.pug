@@ -1,0 +1,74 @@
+form.container
+  .library-header
+    h1 Book Genie Community Library
+    .search-bar
+      input(type="text" placeholder="Search books...")
+    .login-btn Login
+    .mode-toggle 🌓
+    a.create-app(href="https://websim.com/@JUSTIN_TIME/bookgenie" target="_blank") Create New Book
+    .wallet-status
+      span Wallet: 
+      span#wallet-address Not Connected
+      span#token-balance 0 Book Tokens, 0 Genie Coins, 0 Wish Coins
+  .shelves
+    - for (var s = 1; s <= 3; s++)
+      .shelf-row(id=`shelf${s}`)
+        - for (var r = 1; r <= bookData.length; r++)
+          input(type="radio", name=`title${s}`, id=`book${s}-${r}`)
+        .surface
+          - var start = (s - 1) * Math.ceil(bookData.length / 3)
+          - var end = Math.min(start + Math.ceil(bookData.length / 3), bookData.length)
+          - for (var b = start + bookStart; b < end + bookStart; b++)
+            - if (b >= bookStart && b < start + bookStart + bookData.length)
+              +labelBlock(b, bookData)
+            - else
+              +divBlock(b)
+  .marketplace
+    // Author showcase and buy options (Amazon, Kindle, Genie)
+  input(type="reset", value="Return")
+  .popup-overlay.hidden
+    .popup(data-book-id="")
+      h2 Customize Book
+      .upload-section
+        label Upload Cover (Front)
+        input(type="file" accept="image/*" data-section="front")
+      .upload-section
+        label Upload Cover (Back)
+        input(type="file" accept="image/*" data-section="back")
+      .upload-section
+        label Upload Spine
+        input(type="file" accept="image/*" data-section="spine")
+      .upload-section
+        label Upload Video
+        input(type="file" accept="video/*")
+      .upload-section
+        label Upload Full Book (PDF/EPUB)
+        input(type="file" accept=".pdf,.epub")
+      .mirror-toggle
+        label Mirror Cover
+        input(type="checkbox")
+      .tts-section
+        h3 Text-to-Speech Settings
+        label Voice Selection
+        select#tts-voice
+          option(value="default") Default Voice
+        label Reading Speed
+        input(type="range" min="0.5" max="2" step="0.1" value="1" id="tts-speed")
+        button#tts-preview Preview Narration
+      .print-section
+        h3 Print Options
+        label Format
+        select#print-format
+          option(value="paperback") Paperback
+          option(value="hardcover") Hardcover
+        label Paper Type
+        select#paper-type
+          option(value="standard") Standard
+          option(value="premium") Premium
+        button#order-proof Order Proof Copy
+      .export-section
+        h3 Export Options
+        button#export-epub Export EPUB
+        button#export-mobi Export MOBI
+      button.save Save
+      button.cancel Cancel
